@@ -4,7 +4,9 @@ A naive HTTP JSON API for use with Postgres.
 
 - Zero-configuration REST-like interaction with data from existing tables
 - Arbitrary JSON payloads mapped to existing table schemas
-- No HTTP authentication mechanism is employed nor is SSL implemented.
+- No HTTP Authentication
+- No SSL
+- Conforms to [JSON:API v1.0](//jsonapi.org) 
 
 ## Usage
 

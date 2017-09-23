@@ -14,7 +14,7 @@ import (
 
 func mockGrotto() (g *Grotto, m sqlmock.Sqlmock) {
   db, m, _ := sqlmock.New()
-  g := &Grotto{
+  g = &Grotto{
     HTTP: echo.New(),
     DB: db,
   }
@@ -32,16 +32,21 @@ func TestReadResource(t *testing.T) {
   g, m := mockGrotto()
   defer g.DB.Close()
 
-  json := `[{"id":1,"key":"value"}]`
-  m.ExpectQuery("SELECT json_agg\\(resources\\) as data FROM resources where id = (.+)").
-    WithArgs("1").
-    WillReturnRows(m.NewRows([]string{"data"}).AddRow(json))
+  resource := "resources"
+  id := 1
+  data := fmt.Sprintf(`[{"id":%d,"key":"value"}]`, id)
 
-  r, _ := http.NewRequest("GET", "/resources/1", nil)
+  m.ExpectQuery(".*").
+    WithArgs(string(id)).
+    WillReturnRows(sqlmock.NewRows([]string{"data"}).AddRow(data))
+
+  // Generate test request
+  r, _ := http.NewRequest("GET", fmt.Sprintf("/resources/%d", id), nil)
   response := mockServe(g, r)
 
   expectResponseCode(t, 200, response.Code)
-  expectResponseBody(t, json, response.Body)
+  body := fmt.Sprintf(`{"data":%s,"meta":{"resource":"%s"}}`, data, resource)
+  expectResponseBody(t, body, response.Body)
   if err := m.ExpectationsWereMet(); err != nil {
     t.Errorf("there were unfulfilled expections: %s", err)
   }
@@ -49,14 +54,14 @@ func TestReadResource(t *testing.T) {
 
 func expectResponseBody(t *testing.T, expected string, data *bytes.Buffer) {
   bs, _ := ioutil.ReadAll(data)
-  result := string(bs)
-  if expected != result {
-    t.Errorf("Expected response body:`%s` Received: `%s`\n", expected, result)
+  received := string(bs)
+  if expected != received {
+    t.Errorf("\nUnexpected response body:\n%s\n\nExpected:\n%s\n", received, expected)
   }
 }
 
-func expectResponseCode(t *testing.T, expected int, result int) {
-  if expected != result {
-    t.Errorf("Expected response code %d. Received %d\n", expected, result)
+func expectResponseCode(t *testing.T, expected int, received int) {
+  if expected != received {
+    t.Errorf("\nUnexpected response code: %d\nExpected %d\n", received, expected)
   }
 }
