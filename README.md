@@ -6,7 +6,7 @@ Zero-configuration, REST-like interaction with existing data in a postgres datab
 
 ## Installation
 ```bash
-go get -u github.com/daetal-us/grotto
+go get github.com/daetal-us/grotto
 ```
 ## Requirements
 
