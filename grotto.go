@@ -2,8 +2,8 @@ package main
 
 import (
   "flag"
-  "fmt"
   "database/sql"
+  "log"
 
   "github.com/labstack/echo"
   _ "github.com/lib/pq"
@@ -18,29 +18,32 @@ type Grotto struct {
 // start the HTTP server.
 func main() {
   // extract flags
-  conn :=  flag.String("db", "", "Postgres URI")
-  port := flag.String("port", ":8008", "Port for HTTP Listener")
+  dsn :=  flag.String("dsn", "", "Postgres DSN (e.g. postgres://user:pass@host/db)")
+  addr := flag.String("addr", ":8008", "TCP network address for HTTP Listener")
   flag.Parse()
+
+  if *dsn == "" {
+    log.Fatal("No DSN provided.")
+  }
   // initialize a new Grotto instance
-  g := NewGrotto(conn)
+  g := NewGrotto(dsn)
   // Start serving
-  g.Serve(port)
+  g.Serve(addr)
 }
 
 // Generate a new Grotto instance
 // - instantiate a database connection reference
 // - instantiate a new HTTP server reference
 // - configure the HTTP routes
-func NewGrotto(conn *string) *Grotto {
+func NewGrotto(dsn *string) *Grotto {
   // Database Connection
-  uri := fmt.Sprintf("postgres://%s", *conn)
-  db, err := sql.Open("postgres", uri)
+  db, err := sql.Open("postgres", *dsn)
   if err != nil {
-    panic(err)
+    log.Fatal(err)
   }
   // Verify connection
   if err = db.Ping(); err != nil {
-    panic(err)
+    log.Fatal("Database connection refused.")
   }
   // HTTP Server
   e := echo.New()
@@ -55,23 +58,24 @@ func NewGrotto(conn *string) *Grotto {
 // Configure the HTTP methods, routes and handlers
 // @see handlers.go
 func (g *Grotto) Route() {
-  g.HTTP.HTTPErrorHandler = g.errorHandler
-  g.HTTP.GET(   "/",               g.index)
-  g.HTTP.GET(   "/:resources",     g.getResources)
-  g.HTTP.GET(   "/:resources/:id", g.getResource)
-  g.HTTP.POST(  "/:resources/:id", g.saveResource)
-  g.HTTP.PUT(   "/:resources/:id", g.updateResource)
-  g.HTTP.DELETE("/:resources/:id", g.deleteResource)
+  g.HTTP.HTTPErrorHandler =       g.errorHandler
+  g.HTTP.GET(   "/",              g.index)
+  g.HTTP.GET(   "/:resource",     g.getResources)
+  g.HTTP.GET(   "/:resource/:id", g.getResource)
+  g.HTTP.POST(  "/:resource/:id", g.createResource)
+  g.HTTP.PUT(   "/:resource/:id", g.updateResource)
+  g.HTTP.DELETE("/:resource/:id", g.deleteResource)
 }
 
 // Serve HTTP requests
-func (g *Grotto) Serve(port *string) {
+func (g *Grotto) Serve(addr *string) {
   // Display the Grotto banner
-  fmt.Println(fmt.Sprintf("Grotto now available @ %s", *port))
+  log.Printf("Starting Grotto @ %s", *addr)
+  log.Print("kūkulu pono, kamaʻāina!")
   // Hide the Echo banner
   g.HTTP.HideBanner = true
   // Start serving...
-  g.HTTP.Logger.Fatal(g.HTTP.Start(*port))
+  log.Fatal(g.HTTP.Start(*addr))
   // Eventually close the connection to the DB
   defer g.DB.Close()
 }

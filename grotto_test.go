@@ -33,15 +33,15 @@ func TestReadResource(t *testing.T) {
   defer g.DB.Close()
 
   resource := "resources"
-  id := 1
-  data := fmt.Sprintf(`[{"id":%d,"key":"value"}]`, id)
+  id := "1"
+  data := fmt.Sprintf(`[{"id":%s,"key":"value"}]`, id)
 
   m.ExpectQuery(".*").
-    WithArgs(string(id)).
+    WithArgs(id).
     WillReturnRows(sqlmock.NewRows([]string{"data"}).AddRow(data))
 
   // Generate test request
-  r, _ := http.NewRequest("GET", fmt.Sprintf("/resources/%d", id), nil)
+  r, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s", resource, id), nil)
   response := mockServe(g, r)
 
   expectResponseCode(t, 200, response.Code)
@@ -50,6 +50,94 @@ func TestReadResource(t *testing.T) {
   if err := m.ExpectationsWereMet(); err != nil {
     t.Errorf("there were unfulfilled expections: %s", err)
   }
+}
+
+func TestReadNotFound(t *testing.T) {
+  g, m := mockGrotto()
+  defer g.DB.Close()
+
+  resource := "resources"
+  id := "2"
+
+  m.ExpectQuery(".*").
+    WithArgs(id).
+    WillReturnRows(sqlmock.NewRows([]string{"data"}))
+
+  // Generate test request
+  r, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s", resource, id), nil)
+  response := mockServe(g, r)
+
+  expectResponseNotFound(t, response)
+  if err := m.ExpectationsWereMet(); err != nil {
+    t.Errorf("there were unfulfilled expections: %s", err)
+  }
+}
+
+func testAllResources(t *testing.T) {
+  g, m := mockGrotto()
+  defer g.DB.Close()
+
+  resource := "resources"
+  data := fmt.Sprintf(`[{"id":1,"key":"value"},{"id":2,"key":"value2"}]`)
+
+  m.ExpectQuery(".*").
+    WillReturnRows(sqlmock.NewRows([]string{"data"}).AddRow(data))
+
+  // Generate test request
+  r, _ := http.NewRequest("GET", fmt.Sprintf("/%s", resource), nil)
+  response := mockServe(g, r)
+
+  expectResponseCode(t, 200, response.Code)
+  body := fmt.Sprintf(`{"data":%s,"meta":{"resource":"%s"}}`, data, resource)
+  expectResponseBody(t, body, response.Body)
+  if err := m.ExpectationsWereMet(); err != nil {
+    t.Errorf("there were unfulfilled expections: %s", err)
+  }
+}
+
+func testAllNotFound(t *testing.T) {
+  g, m := mockGrotto()
+  defer g.DB.Close()
+
+  resource := "resources"
+
+  m.ExpectQuery(".*").
+    WillReturnError(fmt.Errorf("sql: table not found"))
+
+  // Generate test request
+  r, _ := http.NewRequest("GET", fmt.Sprintf("/%s", resource), nil)
+  response := mockServe(g, r)
+  expectResponseNotFound(t, response)
+  if err := m.ExpectationsWereMet(); err != nil {
+    t.Errorf("there were unfulfilled expections: %s", err)
+  }
+}
+
+func testAllEmpty(t *testing.T) {
+  g, m := mockGrotto()
+  defer g.DB.Close()
+
+  resource := "resources"
+
+  m.ExpectQuery(".*").
+    WillReturnRows(sqlmock.NewRows([]string{"data"}))
+
+  // Generate test request
+  r, _ := http.NewRequest("GET", fmt.Sprintf("/%s", resource), nil)
+  response := mockServe(g, r)
+
+  expectResponseCode(t, 200, response.Code)
+  body := fmt.Sprintf(`{"data":[],"meta":{"resource":"%s"}}`, resource)
+  expectResponseBody(t, body, response.Body)
+  if err := m.ExpectationsWereMet(); err != nil {
+    t.Errorf("there were unfulfilled expections: %s", err)
+  }
+}
+
+func expectResponseNotFound(t *testing.T, r *httptest.ResponseRecorder) {
+  expectResponseCode(t, 404, r.Code)
+  body := `{"errors":[{"status":"404","detail":"Resource not found."}]}`
+  expectResponseBody(t, body, r.Body)
 }
 
 func expectResponseBody(t *testing.T, expected string, data *bytes.Buffer) {

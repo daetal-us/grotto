@@ -1,26 +1,78 @@
 # Grotto
 
-A naive HTTP JSON API for use with Postgres.
+_A naive HTTP JSON API for Postgres_
 
-- Zero-configuration REST-like interaction with data from existing tables
-- Arbitrary JSON payloads mapped to existing table schemas
-- No HTTP Authentication
-- No SSL
-- Conforms to [JSON:API v1.0](//jsonapi.org) 
+Zero-configuration, REST-like interaction with existing data in a postgres database.
+
+## Installation
+```bash
+go get -u github.com/daetal-us/grotto
+```
+## Requirements
+
+- Requires [Go](//golang.org).
+- Requires an accessible instance of [Postgres](//postgresql.org).
+- Only table names containing alphanumeric, dashes and underscore characters will be accessible.
+- Primary key columns for all tables assumed to be `id`.
 
 ## Usage
 
 ```bash
-  grotto --uri="$POSTGRES_USER:$POSTGRES_PASS@$POSTGRES_HOST/$POSTGRES_DB?sslmode=disable"
+grotto -addr :8080 -dsn postgres://$POSTGRES_USER:$POSTGRES_PASS@$POSTGRES_HOST/$POSTGRES_DB?sslmode=disable
+```
+## Conventions
 
-  Grotto now available @ :8008
+### Paths
+
+| path | description | `GET` (read) | `POST` (create) | `PUT` (update) | `DELETE` |
+| --- | --- | :-: | :-: |  :-: | :-: |
+| `/` | all available tables | √ | | | |
+| `/:table` | all resources in table | √ | | | |
+| `/:table/:id` | specific resource in table | √ | √ | √ | √ |
+
+### Responses
+
+Successful responses:
+
+```
+GET /users
+
+{
+  "data": [
+    {
+      ...
+    },
+    ...
+  ],
+  "meta": {
+    "table": "users"
+  }
+}
 ```
 
-## Installation
+```
+GET /users/1234
 
-**Requirements**
-- [Go](//golang.org)
+{
+  "data": {
+    "id": 1234,
+    ...
+  },
+  "meta": {
+    "table": "users"
+  }
+}
+```
 
-```bash
-  go get -u github.com/daetal-us/grotto
+Unsuccessful responses:
+
+```
+GET /nonexistant-table
+
+{
+  "error": {
+    "status": 500,
+    "message": "Some error message."
+  }
+}
 ```
