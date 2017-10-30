@@ -1,4 +1,4 @@
-<img src="http://daetal.us/static/media/grotto.png" style="float:right; margin:0 0 2em 2em;">
+<img src="http://daetal.us/static/media/grotto.png" align="right">
 
 # Grotto
 
