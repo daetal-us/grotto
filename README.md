@@ -1,3 +1,5 @@
+![Grotto](http://daetal.us/static/media/grotto.png)
+
 # Grotto
 
 _A naive HTTP JSON API for Postgres_
