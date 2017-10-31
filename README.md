@@ -1,7 +1,6 @@
-<img src="http://daetal.us/static/media/grotto.png" align="right">
+<img src="http://daetal.us/static/media/grotto.png" align="right" width="35%">
 
 # Grotto
-
 _A naive HTTP JSON API for Postgres_
 
 Minimally-configurable, REST-like interaction with a postgres database.
