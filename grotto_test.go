@@ -34,7 +34,7 @@ func TestReadResource(t *testing.T) {
 
   resource := "resources"
   id := "1"
-  data := fmt.Sprintf(`[{"id":%s,"key":"value"}]`, id)
+  data := fmt.Sprintf(`{"id":%s,"key":"value"}`, id)
 
   m.ExpectQuery(".*").
     WithArgs(id).
@@ -45,7 +45,7 @@ func TestReadResource(t *testing.T) {
   response := mockServe(g, r)
 
   expectResponseCode(t, 200, response.Code)
-  body := fmt.Sprintf(`{"data":%s,"meta":{"resource":"%s"}}`, data, resource)
+  body := fmt.Sprintf(`{"data":%s}`, data)
   expectResponseBody(t, body, response.Body)
   if err := m.ExpectationsWereMet(); err != nil {
     t.Errorf("there were unfulfilled expections: %s", err)
@@ -88,7 +88,7 @@ func testAllResources(t *testing.T) {
   response := mockServe(g, r)
 
   expectResponseCode(t, 200, response.Code)
-  body := fmt.Sprintf(`{"data":%s,"meta":{"resource":"%s"}}`, data, resource)
+  body := fmt.Sprintf(`{"data":%s}`, data)
   expectResponseBody(t, body, response.Body)
   if err := m.ExpectationsWereMet(); err != nil {
     t.Errorf("there were unfulfilled expections: %s", err)
@@ -127,7 +127,7 @@ func testAllEmpty(t *testing.T) {
   response := mockServe(g, r)
 
   expectResponseCode(t, 200, response.Code)
-  body := fmt.Sprintf(`{"data":[],"meta":{"resource":"%s"}}`, resource)
+  body := `{"data":[]}`
   expectResponseBody(t, body, response.Body)
   if err := m.ExpectationsWereMet(); err != nil {
     t.Errorf("there were unfulfilled expections: %s", err)

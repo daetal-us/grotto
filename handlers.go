@@ -12,11 +12,6 @@ import (
 type Response struct {
   Data interface{} `json:"data,omitempty"`
   Error string     `json:"error,omitempty"`
-  Meta *Meta       `json:"meta,omitempty"`
-}
-
-type Meta struct {
-  Table string `json:"table,omitempty"`
 }
 
 // Error handler
@@ -53,7 +48,7 @@ func (g *Grotto) getRows(c echo.Context) error {
     }
     return err
   }
-  return JSONData(c, table, data)
+  return JSONData(c, data)
 }
 
 // Get row HTTP handler
@@ -73,7 +68,7 @@ func (g *Grotto) getRow(c echo.Context) error {
     }
     return err
   }
-  return JSONData(c, table, data)
+  return JSONData(c, data)
 }
 
 // Save row HTTP handler
@@ -92,7 +87,7 @@ func (g *Grotto) createRow(c echo.Context) error {
   if err != nil {
     return echo.NewHTTPError(http.StatusBadRequest, err)
   }
-  return c.NoContent(http.StatusCreated)
+  return c.NoContent(http.StatusOK)
 }
 // Update row HTTP handler
 func (g *Grotto) updateRow(c echo.Context) error {
@@ -112,7 +107,7 @@ func (g *Grotto) updateRow(c echo.Context) error {
   if err != nil {
     return echo.NewHTTPError(http.StatusBadRequest, err)
   }
-  return g.getRow(c)
+  return c.NoContent(http.StatusOK)
 }
 // Delete row HTTP handler
 func (g *Grotto) deleteRow(c echo.Context) error {
@@ -136,17 +131,12 @@ func (g *Grotto) deleteRow(c echo.Context) error {
 
 // Helper for JSON error response
 func JSONError(c echo.Context, code int, message string) error {
-  return c.JSON(code, Response{
-    Error: message,
-  })
+  return c.JSON(code, Response{Error: message})
 }
 
 // Helper for JSON data response
-func JSONData(c echo.Context, table string, data interface{}) error {
-  return c.JSON(http.StatusOK, Response{
-    Data: data,
-    Meta: &Meta{table},
-  })
+func JSONData(c echo.Context, data interface{}) error {
+  return c.JSON(http.StatusOK, Response{Data: data})
 }
 
 // Extract tables parameter from HTTP request context

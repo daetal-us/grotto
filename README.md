@@ -48,10 +48,7 @@ Content-Type: application/json; charset=UTF-8
       ...
     },
     ...
-  ],
-  "meta": {
-    "table": "users"
-  }
+  ]
 }
 ```
 
@@ -67,9 +64,6 @@ Content-Type: application/json; charset=UTF-8
   "data": {
     "id": 1234,
     ...
-  },
-  "meta": {
-    "table": "users"
   }
 }
 ```
