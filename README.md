@@ -4,7 +4,7 @@
 
 _A naive HTTP JSON API for Postgres_
 
-Zero-configuration, REST-like interaction with existing data in a postgres database.
+Minimally-configurable, REST-like interaction with existing data in a postgres database.
 
 ## Installation
 ```bash
