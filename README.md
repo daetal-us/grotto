@@ -20,25 +20,29 @@ go get github.com/daetal-us/grotto
 ## Usage
 
 ```bash
-grotto -addr :8080 -dsn postgres://$POSTGRES_USER:$POSTGRES_PASS@$POSTGRES_HOST/$POSTGRES_DB?sslmode=disable
+grotto -addr :8080 -dsn postgres://user:password@host/db
 ```
-## Conventions
 
-### Paths
+## Interface
+
+The interface consists of standard HTTP [request methods](//en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods) paired with the following path conventions:
 
 | path | description | `GET` (read) | `POST` (create) | `PUT` (update) | `DELETE` |
 | --- | --- | :-: | :-: |  :-: | :-: |
 | `/` | all available tables | √ | | | |
-| `/:table` | all resources in table | √ | | | |
-| `/:table/:id` | specific resource in table | √ | √ | √ | √ |
+| `/:table` | all rows in table | √ | | | |
+| `/:table/:id` | specific row in table | √ | √ | √ | √ |
 
-### Responses
+## Responses
 
-Successful responses:
+All rows in hypothetical `users` table:
 
 ```
-GET /users
-
+GET /users HTTP/1.1
+...
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+...
 {
   "data": [
     {
@@ -52,9 +56,14 @@ GET /users
 }
 ```
 
-```
-GET /users/1234
+Single row in hypothetical `users` table:
 
+```
+GET /users/1234 HTTP/1.1
+...
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+...
 {
   "data": {
     "id": 1234,
@@ -66,15 +75,17 @@ GET /users/1234
 }
 ```
 
-Unsuccessful responses:
+Table not found:
 
 ```
-GET /nonexistant-table
-
+GET /nonexistant-table HTTP/1.1
+...
+HTTP/1.1 404 Not Found
+Content-Type: application/json; charset=UTF-8
+...
 {
   "error": {
-    "status": 500,
-    "message": "Some error message."
+    "message": "Resource not found."
   }
 }
 ```

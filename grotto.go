@@ -4,6 +4,7 @@ import (
   "flag"
   "database/sql"
   "log"
+  "time"
 
   "github.com/labstack/echo"
   _ "github.com/lib/pq"
@@ -42,8 +43,11 @@ func NewGrotto(dsn *string) *Grotto {
     log.Fatal(err)
   }
   // Verify connection
-  if err = db.Ping(); err != nil {
-    log.Fatal("Database connection refused.")
+  if db.Ping() == nil {
+    log.Println("Connected to database.")
+  } else {
+    time.Sleep(5 * time.Second)
+    log.Println("Could not connect to databse. Retrying in 5 seconds...")
   }
   // HTTP Server
   e := echo.New()
@@ -60,11 +64,11 @@ func NewGrotto(dsn *string) *Grotto {
 func (g *Grotto) Route() {
   g.HTTP.HTTPErrorHandler =       g.errorHandler
   g.HTTP.GET(   "/",              g.index)
-  g.HTTP.GET(   "/:resource",     g.getResources)
-  g.HTTP.GET(   "/:resource/:id", g.getResource)
-  g.HTTP.POST(  "/:resource/:id", g.createResource)
-  g.HTTP.PUT(   "/:resource/:id", g.updateResource)
-  g.HTTP.DELETE("/:resource/:id", g.deleteResource)
+  g.HTTP.GET(   "/:table",        g.getRows)
+  g.HTTP.POST(  "/:table",        g.createRow)
+  g.HTTP.GET(   "/:table/:id",    g.getRow)
+  g.HTTP.PUT(   "/:table/:id",    g.updateRow)
+  g.HTTP.DELETE("/:table/:id",    g.deleteRow)
 }
 
 // Serve HTTP requests

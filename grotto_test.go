@@ -67,7 +67,7 @@ func TestReadNotFound(t *testing.T) {
   r, _ := http.NewRequest("GET", fmt.Sprintf("/%s/%s", resource, id), nil)
   response := mockServe(g, r)
 
-  expectResponseNotFound(t, response)
+  expectResponseRowNotFound(t, response)
   if err := m.ExpectationsWereMet(); err != nil {
     t.Errorf("there were unfulfilled expections: %s", err)
   }
@@ -107,7 +107,7 @@ func testAllNotFound(t *testing.T) {
   // Generate test request
   r, _ := http.NewRequest("GET", fmt.Sprintf("/%s", resource), nil)
   response := mockServe(g, r)
-  expectResponseNotFound(t, response)
+  expectResponseTableNotFound(t, response)
   if err := m.ExpectationsWereMet(); err != nil {
     t.Errorf("there were unfulfilled expections: %s", err)
   }
@@ -134,9 +134,15 @@ func testAllEmpty(t *testing.T) {
   }
 }
 
-func expectResponseNotFound(t *testing.T, r *httptest.ResponseRecorder) {
+func expectResponseTableNotFound(t *testing.T, r *httptest.ResponseRecorder) {
   expectResponseCode(t, 404, r.Code)
-  body := `{"errors":[{"status":"404","detail":"Resource not found."}]}`
+  body := `{"error":"Table not found."}`
+  expectResponseBody(t, body, r.Body)
+}
+
+func expectResponseRowNotFound(t *testing.T, r *httptest.ResponseRecorder) {
+  expectResponseCode(t, 404, r.Code)
+  body := `{"error":"Row not found."}`
   expectResponseBody(t, body, r.Body)
 }
 
