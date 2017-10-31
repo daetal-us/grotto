@@ -84,8 +84,6 @@ HTTP/1.1 404 Not Found
 Content-Type: application/json; charset=UTF-8
 ...
 {
-  "error": {
-    "message": "Resource not found."
-  }
+  "error": "Resource not found."
 }
 ```
