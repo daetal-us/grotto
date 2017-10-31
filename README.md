@@ -84,6 +84,6 @@ HTTP/1.1 404 Not Found
 Content-Type: application/json; charset=UTF-8
 ...
 {
-  "error": "Resource not found."
+  "error": "Table not found."
 }
 ```
